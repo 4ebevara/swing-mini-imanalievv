@@ -2,8 +2,14 @@ package guess;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
 
 public class GuessNumberGame extends JFrame {
+
+    private int secretNumber;
+    private int attempts;
 
     private JLabel titleLabel;
     private JLabel hintLabel;
@@ -20,6 +26,7 @@ public class GuessNumberGame extends JFrame {
         setResizable(false);
 
         initComponents();
+        resetGame();
 
         setVisible(true);
     }
@@ -61,6 +68,81 @@ public class GuessNumberGame extends JFrame {
         mainPanel.add(buttonPanel);
 
         add(mainPanel);
+
+        guessButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkGuess();
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetGame();
+            }
+        });
+
+        inputField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkGuess();
+            }
+        });
+    }
+
+    private void checkGuess() {
+        String text = inputField.getText().trim();
+        if (text.isEmpty()) {
+            hintLabel.setText("Введите число!");
+            return;
+        }
+
+        int guess;
+        try {
+            guess = Integer.parseInt(text);
+        } catch (NumberFormatException ex) {
+            hintLabel.setText("Введите корректное число!");
+            inputField.setText("");
+            return;
+        }
+
+        if (guess < 1 || guess > 100) {
+            hintLabel.setText("Число должно быть от 1 до 100!");
+            inputField.setText("");
+            return;
+        }
+
+        attempts++;
+        attemptsLabel.setText("Попыток: " + attempts);
+
+        if (guess < secretNumber) {
+            hintLabel.setText("Моё число БОЛЬШЕ! Попробуй ещё.");
+            hintLabel.setForeground(new Color(0, 100, 200));
+        } else if (guess > secretNumber) {
+            hintLabel.setText("Моё число МЕНЬШЕ! Попробуй ещё.");
+            hintLabel.setForeground(new Color(200, 100, 0));
+        } else {
+            hintLabel.setText("Поздравляю! Ты угадал число " + secretNumber + "!");
+            hintLabel.setForeground(new Color(0, 150, 0));
+            guessButton.setEnabled(false);
+            inputField.setEnabled(false);
+        }
+
+        inputField.setText("");
+        inputField.requestFocus();
+    }
+
+    private void resetGame() {
+        secretNumber = new Random().nextInt(100) + 1;
+        attempts = 0;
+        hintLabel.setText("Введите число и нажмите \"Угадать\"");
+        hintLabel.setForeground(Color.BLACK);
+        attemptsLabel.setText("Попыток: 0");
+        inputField.setText("");
+        inputField.setEnabled(true);
+        guessButton.setEnabled(true);
+        inputField.requestFocus();
     }
 
     public static void main(String[] args) {
